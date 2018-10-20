@@ -45,5 +45,7 @@ func iprangeUpdateFunc(d *schema.ResourceData, meta interface{}) error {
 }
 
 func iprangeDeleteFunc(d *schema.ResourceData, meta interface{}) error {
-	return nil
+	client := meta.(*FifoClient)
+
+	return client.DeleteIpRange(d.Id())
 }

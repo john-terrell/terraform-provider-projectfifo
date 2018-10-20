@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -92,10 +91,10 @@ func CheckResponse(res *http.Response) error {
 	}
 }
 
-func (c *FifoClient) SendRequest(method string, api string, body io.Reader) (string, error) {
+func (c *FifoClient) SendRequest(method string, api string, body io.Reader) ([]byte, error) {
 	request, err := http.NewRequest(method, c.Endpoint+api, body)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	request.Header.Set("Content-Type", "application/json;charset=UTF-8")
@@ -105,57 +104,42 @@ func (c *FifoClient) SendRequest(method string, api string, body io.Reader) (str
 	client := &http.Client{}
 	response, err := client.Do(request)
 	if err != nil {
-		return "", fmt.Errorf("The HTTP request failed with error %s\n", err)
+		return nil, fmt.Errorf("The HTTP request failed with error %s.\n", err)
 	}
 
 	if err := CheckResponse(response); err != nil {
-		return "", err
+		return nil, err
 	}
 
 	slurp, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return string(slurp), nil
+	return slurp, nil
 }
 
 func (c *FifoClient) CreateIpRange(m *IPRange) (string, error) {
 
 	jsonValue, _ := json.Marshal(m)
 
-	request, err := http.NewRequest("POST", c.Endpoint+"/api/3/ipranges", bytes.NewBuffer(jsonValue))
+	response, err := c.SendRequest("POST", "/api/3/ipranges/", bytes.NewBuffer(jsonValue))
 	if err != nil {
 		return "", err
 	}
-
-	request.Header.Set("Content-Type", "application/json;charset=UTF-8")
-	request.Header.Set("Authorization", "Bearer "+c.ApiKey)
-	request.Header.Set("Accept", "application/json")
-
-	client := &http.Client{}
-	response, err := client.Do(request)
-	if err != nil {
-		return "", fmt.Errorf("The HTTP request failed with error %s\n", err)
-	}
-
-	if err := CheckResponse(response); err != nil {
-		return "", err
-	}
-
-	slurp, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return "", err
-	}
-
-	log.Printf("Unmarsalling json from: %s\n", slurp)
 
 	result := make(map[string]interface{})
-	if err := json.Unmarshal(slurp, &result); err != nil {
+	if err := json.Unmarshal(response, &result); err != nil {
 		return "", err
 	}
 
 	var uuid = result["uuid"]
 
 	return uuid.(string), nil
+}
+
+func (c *FifoClient) DeleteIpRange(uuid string) error {
+	_, err := c.SendRequest("DELETE", "/api/3/ipranges/"+uuid, nil)
+
+	return err
 }
