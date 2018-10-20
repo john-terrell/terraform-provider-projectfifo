@@ -120,10 +120,9 @@ func (c *FifoClient) SendRequest(method string, api string, body io.Reader) ([]b
 }
 
 func (c *FifoClient) CreateIpRange(m *IPRange) (string, error) {
+	jsonDocument, _ := json.Marshal(m)
 
-	jsonValue, _ := json.Marshal(m)
-
-	response, err := c.SendRequest("POST", "/api/3/ipranges/", bytes.NewBuffer(jsonValue))
+	response, err := c.SendRequest("POST", "/api/3/ipranges/", bytes.NewBuffer(jsonDocument))
 	if err != nil {
 		return "", err
 	}
@@ -136,6 +135,31 @@ func (c *FifoClient) CreateIpRange(m *IPRange) (string, error) {
 	var uuid = result["uuid"]
 
 	return uuid.(string), nil
+}
+
+func (c *FifoClient) GetIpRange(uuid string) (*IPRange, error) {
+	response, err := c.SendRequest("GET", "/api/3/ipranges/"+uuid, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	iprange := IPRange{}
+	if err := json.Unmarshal(response, &iprange); err != nil {
+		return nil, err
+	}
+
+	return &iprange, nil
+}
+
+func (c *FifoClient) UpdateIpRange(uuid string, m *IPRange) error {
+	jsonDocument, _ := json.Marshal(m)
+
+	_, err := c.SendRequest("PUT", "/api/3/ipranges/"+uuid, bytes.NewBuffer(jsonDocument))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (c *FifoClient) DeleteIpRange(uuid string) error {

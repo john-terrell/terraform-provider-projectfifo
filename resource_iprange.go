@@ -81,11 +81,43 @@ func iprangeCreateFunc(d *schema.ResourceData, meta interface{}) error {
 }
 
 func iprangeReadFunc(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*FifoClient)
+
+	iprange, err := client.GetIpRange(d.Id())
+	if err != nil {
+		return err
+	}
+
+	d.Set("name", iprange.Name)
+	d.Set("tag", iprange.Tag)
+	d.Set("network", iprange.Network)
+	d.Set("gateway", iprange.Gateway)
+	d.Set("netmask", iprange.Netmask)
+	d.Set("vlan", iprange.Vlan)
+	d.Set("first", iprange.First)
+	d.Set("last", iprange.Last)
 
 	return nil
 }
 
 func iprangeUpdateFunc(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*FifoClient)
+	ipRange := IPRange{
+		Name:    d.Get("name").(string),
+		Tag:     d.Get("tag").(string),
+		Network: d.Get("network").(string),
+		Gateway: d.Get("gateway").(string),
+		Netmask: d.Get("netmask").(string),
+		Vlan:    d.Get("vlan").(int),
+		First:   d.Get("first").(string),
+		Last:    d.Get("last").(string),
+	}
+
+	err := client.UpdateIpRange(d.Id(), &ipRange)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
