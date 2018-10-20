@@ -2,6 +2,50 @@ package main
 
 import "github.com/hashicorp/terraform/helper/schema"
 
+func resourceIpRange() *schema.Resource {
+	return &schema.Resource{
+		SchemaVersion: 1,
+		Create:        iprangeCreateFunc,
+		Read:          iprangeReadFunc,
+		Update:        iprangeUpdateFunc,
+		Delete:        iprangeDeleteFunc,
+		Schema: map[string]*schema.Schema{ // List of supported configuration fields for your resource
+			"name": &schema.Schema{
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"tag": &schema.Schema{
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"network": &schema.Schema{
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"gateway": &schema.Schema{
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"netmask": &schema.Schema{
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"vlan": &schema.Schema{
+				Type:     schema.TypeInt,
+				Required: true,
+			},
+			"first": &schema.Schema{
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"last": &schema.Schema{
+				Type:     schema.TypeString,
+				Required: true,
+			},
+		},
+	}
+}
+
 // The methods defined below will get called for each resource that needs to
 // get created (createFunc), read (readFunc), updated (updateFunc) and deleted (deleteFunc).
 // For example, if 10 resources need to be created then `createFunc`
@@ -37,6 +81,7 @@ func iprangeCreateFunc(d *schema.ResourceData, meta interface{}) error {
 }
 
 func iprangeReadFunc(d *schema.ResourceData, meta interface{}) error {
+
 	return nil
 }
 

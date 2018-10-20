@@ -70,46 +70,6 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 
 func providerResources() map[string]*schema.Resource {
 	return map[string]*schema.Resource{
-		"projectfifo_iprange": &schema.Resource{
-			SchemaVersion: 1,
-			Create:        iprangeCreateFunc,
-			Read:          iprangeReadFunc,
-			Update:        iprangeUpdateFunc,
-			Delete:        iprangeDeleteFunc,
-			Schema: map[string]*schema.Schema{ // List of supported configuration fields for your resource
-				"name": &schema.Schema{
-					Type:     schema.TypeString,
-					Required: true,
-				},
-				"tag": &schema.Schema{
-					Type:     schema.TypeString,
-					Required: true,
-				},
-				"network": &schema.Schema{
-					Type:     schema.TypeString,
-					Required: true,
-				},
-				"gateway": &schema.Schema{
-					Type:     schema.TypeString,
-					Required: true,
-				},
-				"netmask": &schema.Schema{
-					Type:     schema.TypeString,
-					Required: true,
-				},
-				"vlan": &schema.Schema{
-					Type:     schema.TypeInt,
-					Required: true,
-				},
-				"first": &schema.Schema{
-					Type:     schema.TypeString,
-					Required: true,
-				},
-				"last": &schema.Schema{
-					Type:     schema.TypeString,
-					Required: true,
-				},
-			},
-		},
+		"projectfifo_iprange": resourceIpRange(),
 	}
 }
