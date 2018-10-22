@@ -119,6 +119,45 @@ func (c *FifoClient) SendRequest(method string, api string, body io.Reader) ([]b
 	return slurp, nil
 }
 
+func (c *FifoClient) CreateVm(m *VMCreate) (string, error) {
+	jsonDocument, _ := json.Marshal(m)
+
+	response, err := c.SendRequest("POST", "/api/3/vms", bytes.NewBuffer(jsonDocument))
+	if err != nil {
+		return "", err
+	}
+
+	result := make(map[string]interface{})
+	if err := json.Unmarshal(response, &result); err != nil {
+		return "", err
+	}
+
+	var uuid = result["uuid"]
+
+	return uuid.(string), nil
+}
+
+func (c *FifoClient) GetVm(uuid string) (VM, error) {
+	vm := VM{}
+
+	response, err := c.SendRequest("GET", "/api/3/vms/"+uuid, nil)
+	if err != nil {
+		return vm, err
+	}
+
+	if err := json.Unmarshal(response, &vm); err != nil {
+		return vm, err
+	}
+
+	return vm, nil
+}
+
+func (c *FifoClient) DeleteVm(uuid string) error {
+	_, err := c.SendRequest("DELETE", "/api/3/vms/"+uuid, nil)
+
+	return err
+}
+
 func (c *FifoClient) CreateIpRange(m *IPRange) (string, error) {
 	jsonDocument, _ := json.Marshal(m)
 

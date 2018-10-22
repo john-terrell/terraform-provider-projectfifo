@@ -15,9 +15,10 @@ func main() {
 
 func Provider() terraform.ResourceProvider {
 	return &schema.Provider{ // Source https://github.com/hashicorp/terraform/blob/v0.6.6/helper/schema/provider.go#L20-L43
-		Schema:        providerSchema(),
-		ResourcesMap:  providerResources(),
-		ConfigureFunc: providerConfigure,
+		Schema:         providerSchema(),
+		ResourcesMap:   providerResources(),
+		DataSourcesMap: providerDataSources(),
+		ConfigureFunc:  providerConfigure,
 	}
 }
 
@@ -71,5 +72,12 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 func providerResources() map[string]*schema.Resource {
 	return map[string]*schema.Resource{
 		"projectfifo_iprange": resourceIpRange(),
+		"projectfifo_vm":      resourceVm(),
+	}
+}
+
+func providerDataSources() map[string]*schema.Resource {
+	return map[string]*schema.Resource{
+		"projectfifo_iprange": datasourceIpRange(),
 	}
 }

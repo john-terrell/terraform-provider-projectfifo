@@ -96,6 +96,7 @@ func iprangeReadFunc(d *schema.ResourceData, meta interface{}) error {
 	d.Set("vlan", iprange.Vlan)
 	d.Set("first", iprange.First)
 	d.Set("last", iprange.Last)
+	d.Set("uuid", iprange.UUID)
 
 	return nil
 }
