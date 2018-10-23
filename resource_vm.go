@@ -9,43 +9,51 @@ func resourceVm() *schema.Resource {
 		SchemaVersion: 1,
 		Create:        vmCreateFunc,
 		Read:          vmReadFunc,
-		Update:        vmUpdateFunc,
-		Delete:        vmDeleteFunc,
+		//		Update:        vmUpdateFunc,
+		Delete: vmDeleteFunc,
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"dataset": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"package": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+				ForceNew: true,
 			},
 			"config": &schema.Schema{
 				Type:     schema.TypeSet,
 				Required: true,
+				ForceNew: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"alias": &schema.Schema{
 							Type:     schema.TypeString,
 							Required: true,
+							ForceNew: true,
 						},
 						"autoboot": &schema.Schema{
 							Type:     schema.TypeBool,
 							Optional: true,
 							Default:  true,
+							ForceNew: true,
 						},
 						"hostname": &schema.Schema{
 							Type:     schema.TypeString,
 							Required: true,
+							ForceNew: true,
 						},
 						"networks": &schema.Schema{
 							Type:     schema.TypeMap,
 							Required: true,
 							Elem:     &schema.Schema{Type: schema.TypeString},
+							ForceNew: true,
 						},
 					},
 				},
@@ -72,17 +80,6 @@ func getVMConfig(cfg map[string]interface{}) VMConfigCreate {
 
 	return config
 }
-
-// The methods defined below will get called for each resource that needs to
-// get created (createFunc), read (readFunc), updated (updateFunc) and deleted (deleteFunc).
-// For example, if 10 resources need to be created then `createFunc`
-// will get called 10 times every time with the information for the proper
-// resource that is being mapped.
-//
-// If at some point any of these functions returns an error, Terraform will
-// imply that something went wrong with the modification of the resource and it
-// will prevent the execution of further calls that depend on that resource
-// that failed to be created/updated/deleted.
 
 func vmCreateFunc(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*FifoClient)
@@ -130,42 +127,30 @@ func vmReadFunc(d *schema.ResourceData, meta interface{}) error {
 	d.Set("dataset", vm.Dataset)
 	d.Set("state", vm.State)
 
-	/*
-		d.Set("network", iprange.Network)
-		d.Set("gateway", iprange.Gateway)
-		d.Set("netmask", iprange.Netmask)
-		d.Set("vlan", iprange.Vlan)
-		d.Set("first", iprange.First)
-		d.Set("last", iprange.Last)
-		d.Set("uuid", iprange.UUID)
-	*/
 	return nil
 }
 
+/*
 func vmUpdateFunc(d *schema.ResourceData, meta interface{}) error {
-	/*
-		client := meta.(*FifoClient)
-		ipRange := IPRange{
-			Name:    d.Get("name").(string),
-			Tag:     d.Get("tag").(string),
-			Network: d.Get("network").(string),
-			Gateway: d.Get("gateway").(string),
-			Netmask: d.Get("netmask").(string),
-			Vlan:    d.Get("vlan").(int),
-			First:   d.Get("first").(string),
-			Last:    d.Get("last").(string),
-		}
-
-		err := client.UpdateIpRange(d.Id(), &ipRange)
-		if err != nil {
-			return err
-		}
-	*/
 	return nil
 }
+*/
 
 func vmDeleteFunc(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*FifoClient)
 
-	return client.DeleteVm(d.Id())
+	err := client.DeleteVm(d.Id())
+	if err != nil {
+		return err
+	}
+
+	for {
+		if !client.VmExists(d.Id()) {
+			break
+		}
+
+		time.Sleep(1 * time.Second)
+	}
+
+	return nil
 }

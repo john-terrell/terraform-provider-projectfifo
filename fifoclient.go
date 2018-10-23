@@ -152,6 +152,16 @@ func (c *FifoClient) GetVm(uuid string) (VM, error) {
 	return vm, nil
 }
 
+func (c *FifoClient) VmExists(uuid string) bool {
+	_, err := c.SendRequest("GET", "/api/3/vms/"+uuid, nil)
+
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
 func (c *FifoClient) DeleteVm(uuid string) error {
 	_, err := c.SendRequest("DELETE", "/api/3/vms/"+uuid, nil)
 
