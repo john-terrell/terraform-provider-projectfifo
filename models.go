@@ -12,6 +12,11 @@ type IPRange struct {
 	UUID    string `json:"uuid"`
 }
 
+type Package struct {
+	Name string `json:"name"`
+	UUID string `json:"uuid"`
+}
+
 type VMNetworkConfigCreate struct {
 	Net0 string `json:"net0"`
 }

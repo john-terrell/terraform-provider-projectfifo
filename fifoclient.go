@@ -15,6 +15,7 @@ type FifoClient struct {
 	Endpoint   string
 	Timeout    int
 	MaxRetries int
+	PackageMap map[string]string
 }
 
 type errorReply struct {
@@ -117,6 +118,68 @@ func (c *FifoClient) SendRequest(method string, api string, body io.Reader) ([]b
 	}
 
 	return slurp, nil
+}
+
+func (c *FifoClient) CachePackageList() error {
+	response, err := c.SendRequest("GET", "/api/3/packages", nil)
+	if err != nil {
+		return err
+	}
+
+	var packages []string
+	if err := json.Unmarshal(response, &packages); err != nil {
+		return err
+	}
+
+	for _, packageUUID := range packages {
+		pkg := Package{}
+
+		pkg, err = c.GetPackage(packageUUID)
+		if err != nil {
+			return err
+		}
+
+		c.PackageMap[pkg.Name] = packageUUID
+	}
+
+	return nil
+}
+
+func (c *FifoClient) FindPackage(name string) (Package, bool, error) {
+	if len(c.PackageMap) == 0 {
+		c.PackageMap = make(map[string]string)
+		err := c.CachePackageList()
+		if err != nil {
+			return Package{}, false, err
+		}
+	}
+
+	packageUUID, found := c.PackageMap[name]
+	if !found {
+		return Package{}, false, nil
+	}
+
+	foundPackage, err := c.GetPackage(packageUUID)
+
+	found = err == nil
+
+	return foundPackage, found, err
+}
+
+func (c *FifoClient) GetPackage(uuid string) (Package, error) {
+	pkg := Package{}
+
+	response, err := c.SendRequest("GET", "/api/3/packages/"+uuid, nil)
+	if err != nil {
+		return pkg, err
+	}
+
+	if err := json.Unmarshal(response, &pkg); err != nil {
+		return pkg, err
+	}
+
+	return pkg, nil
+
 }
 
 func (c *FifoClient) CreateVm(m *VMCreate) (string, error) {
