@@ -29,13 +29,19 @@ func providerSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"api_key": &schema.Schema{
 			Type:        schema.TypeString,
-			Required:    true,
+			Optional:    true,
 			Description: "API Key used to authenticate with the Project Fifo API",
+			DefaultFunc: schema.MultiEnvDefaultFunc([]string{
+				"TF_FIFO_APIKEY",
+			}, nil),
 		},
 		"endpoint": &schema.Schema{
 			Type:        schema.TypeString,
-			Required:    true,
+			Optional:    true,
 			Description: "The URL to the Project Fifo API",
+			DefaultFunc: schema.MultiEnvDefaultFunc([]string{
+				"TF_FIFO_ENDPOINT",
+			}, nil),
 		},
 	}
 }
