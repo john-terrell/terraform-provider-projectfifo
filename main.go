@@ -80,5 +80,6 @@ func providerDataSources() map[string]*schema.Resource {
 	return map[string]*schema.Resource{
 		"projectfifo_iprange": datasourceIpRange(),
 		"projectfifo_package": datasourcePackage(),
+		"projectfifo_dataset": datasourceDataset(),
 	}
 }

@@ -17,6 +17,12 @@ type Package struct {
 	UUID string `json:"uuid"`
 }
 
+type Dataset struct {
+	Name    string `json:"name"`
+	Version string `json:"version"`
+	UUID    string `json:"uuid"`
+}
+
 type VMNetworkConfigCreate struct {
 	Net0 string `json:"net0"`
 }
@@ -34,10 +40,18 @@ type VMCreate struct {
 	Config  VMConfigCreate `json:"config"`
 }
 
+type VMNetworkConfig struct {
+	IP      string `json:"ip"`
+	Netmask string `json:"netmask"`
+	Gateway string `json:"gateway"`
+	MAC     string `json:"mac"`
+}
+
 type VMConfig struct {
-	Alias    string `json:"alias"`
-	Autoboot bool   `json:"autoboot"`
-	Hostname string `json:"hostname"`
+	Alias    string            `json:"alias"`
+	Autoboot bool              `json:"autoboot"`
+	Hostname string            `json:"hostname"`
+	Networks []VMNetworkConfig `json:"networks"`
 }
 
 type VM struct {

@@ -16,6 +16,7 @@ type FifoClient struct {
 	Timeout    int
 	MaxRetries int
 	PackageMap map[string]string
+	DatasetMap map[string]string
 }
 
 type errorReply struct {
@@ -182,6 +183,68 @@ func (c *FifoClient) GetPackage(uuid string) (Package, error) {
 
 }
 
+func (c *FifoClient) CacheDatasetList() error {
+	response, err := c.SendRequest("GET", "/api/3/datasets", nil)
+	if err != nil {
+		return err
+	}
+
+	var datasets []string
+	if err := json.Unmarshal(response, &datasets); err != nil {
+		return err
+	}
+
+	for _, uuid := range datasets {
+		ds := Dataset{}
+
+		ds, err = c.GetDataset(uuid)
+		if err != nil {
+			return err
+		}
+
+		key := ds.Name + ":" + ds.Version
+		c.DatasetMap[key] = uuid
+	}
+
+	return nil
+}
+
+func (c *FifoClient) FindDataset(name string, version string) (Dataset, bool, error) {
+	if len(c.DatasetMap) == 0 {
+		c.DatasetMap = make(map[string]string)
+		err := c.CacheDatasetList()
+		if err != nil {
+			return Dataset{}, false, err
+		}
+	}
+
+	key := name + ":" + version
+	uuid, found := c.DatasetMap[key]
+	if !found {
+		return Dataset{}, false, nil
+	}
+
+	foundDataset, err := c.GetDataset(uuid)
+
+	found = err == nil
+
+	return foundDataset, found, err
+}
+
+func (c *FifoClient) GetDataset(uuid string) (Dataset, error) {
+	response, err := c.SendRequest("GET", "/api/3/datasets/"+uuid, nil)
+	if err != nil {
+		return Dataset{}, err
+	}
+
+	ds := Dataset{}
+	if err := json.Unmarshal(response, &ds); err != nil {
+		return Dataset{}, err
+	}
+
+	return ds, nil
+
+}
 func (c *FifoClient) CreateVm(m *VMCreate) (string, error) {
 	jsonDocument, _ := json.Marshal(m)
 

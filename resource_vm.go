@@ -1,16 +1,18 @@
 package main
 
-import "strings"
-import "time"
-import "github.com/hashicorp/terraform/helper/schema"
+import (
+	"strings"
+	"time"
+
+	"github.com/hashicorp/terraform/helper/schema"
+)
 
 func resourceVm() *schema.Resource {
 	return &schema.Resource{
 		SchemaVersion: 1,
 		Create:        vmCreateFunc,
 		Read:          vmReadFunc,
-		//		Update:        vmUpdateFunc,
-		Delete: vmDeleteFunc,
+		Delete:        vmDeleteFunc,
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
 				Type:     schema.TypeString,
@@ -26,6 +28,10 @@ func resourceVm() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 				ForceNew: true,
+			},
+			"ip": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"config": &schema.Schema{
 				Type:     schema.TypeSet,
@@ -103,7 +109,14 @@ func vmCreateFunc(d *schema.ResourceData, meta interface{}) error {
 
 		state := strings.ToLower(vm.State)
 		if state == "running" || state == "failed" {
-			break
+			if len(vm.Config.Networks) > 0 && vm.Config.Networks[0].IP != "" {
+				d.Set("package", vm.Package)
+				d.Set("dataset", vm.Dataset)
+				d.Set("state", vm.State)
+				d.Set("ip", vm.Config.Networks[0].IP)
+
+				break
+			}
 		}
 
 		time.Sleep(1 * time.Second)
@@ -126,15 +139,10 @@ func vmReadFunc(d *schema.ResourceData, meta interface{}) error {
 	d.Set("package", vm.Package)
 	d.Set("dataset", vm.Dataset)
 	d.Set("state", vm.State)
+	d.Set("ip", vm.Config.Networks[0].IP)
 
 	return nil
 }
-
-/*
-func vmUpdateFunc(d *schema.ResourceData, meta interface{}) error {
-	return nil
-}
-*/
 
 func vmDeleteFunc(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*FifoClient)
