@@ -13,8 +13,9 @@ func main() {
 	plugin.Serve(&opts)
 }
 
+// Source https://github.com/hashicorp/terraform/blob/v0.6.6/helper/schema/provider.go#L20-L43
 func Provider() terraform.ResourceProvider {
-	return &schema.Provider{ // Source https://github.com/hashicorp/terraform/blob/v0.6.6/helper/schema/provider.go#L20-L43
+	return &schema.Provider{
 		Schema:         providerSchema(),
 		ResourcesMap:   providerResources(),
 		DataSourcesMap: providerDataSources(),
@@ -22,44 +23,30 @@ func Provider() terraform.ResourceProvider {
 	}
 }
 
-// List of supported configuration fields for your provider.
-// Here we define a linked list of all the fields that we want to
-// support in our provider (api_key, endpoint, timeout & max_retries).
+// List of supported configuration fields for the provider.
 // More info in https://github.com/hashicorp/terraform/blob/v0.6.6/helper/schema/schema.go#L29-L142
 func providerSchema() map[string]*schema.Schema {
 	return map[string]*schema.Schema{
 		"api_key": &schema.Schema{
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "API Key used to authenticate with the Project Fifo Cluster",
+			Description: "API Key used to authenticate with the Project Fifo API",
 		},
 		"endpoint": &schema.Schema{
 			Type:        schema.TypeString,
 			Required:    true,
-			Description: "The URL to the Fifo Cluster API",
-		},
-		"timeout": &schema.Schema{
-			Type:        schema.TypeInt,
-			Required:    true,
-			Description: "Max. wait time we should wait for a successful connection to the API",
-		},
-		"max_retries": &schema.Schema{
-			Type:        schema.TypeInt,
-			Required:    true,
-			Description: "The max. amount of times we will retry to connect to the API",
+			Description: "The URL to the Project Fifo API",
 		},
 	}
 }
 
 // This is the function used to fetch the configuration params given
-// to our provider which we will use to initialise a dummy client that
-// interacts with the API.
+// to our provider which we will use to initialise a client that
+// interacts with the Project Fifo API.
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	client := FifoClient{
-		ApiKey:     d.Get("api_key").(string),
-		Endpoint:   d.Get("endpoint").(string),
-		Timeout:    d.Get("timeout").(int),
-		MaxRetries: d.Get("max_retries").(int),
+		ApiKey:   d.Get("api_key").(string),
+		Endpoint: d.Get("endpoint").(string),
 	}
 
 	// You could have some field validations here, like checking that
@@ -71,8 +58,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 
 func providerResources() map[string]*schema.Resource {
 	return map[string]*schema.Resource{
-		"projectfifo_iprange": resourceIpRange(),
-		"projectfifo_vm":      resourceVm(),
+		"projectfifo_vm": resourceVm(),
 	}
 }
 
