@@ -1,4 +1,3 @@
-terraform-provider-projectfifo
 terraform.tfstate.backup
 .terraform/plugins/darwin_amd64/lock.json
 .vscode/launch.json

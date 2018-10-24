@@ -11,18 +11,6 @@ Requirements
 -	[Terraform](https://www.terraform.io/downloads.html) 0.10+
 -	[Go](https://golang.org/doc/install) 1.11.0 or higher
 
-Upgrading the provider
-----------------------
-
-The Project Fifo provider doesn't upgrade automatically once you've started using it. After a new release you can run 
-
-```bash
-terraform init -upgrade
-```
-
-to upgrade to the latest stable version of the Project Fifo provider. See the [Terraform website](https://www.terraform.io/docs/configuration/providers.html#provider-versions)
-for more information on provider upgrades, and how to set version constraints on your provider.
-
 Building the provider
 ---------------------
 
