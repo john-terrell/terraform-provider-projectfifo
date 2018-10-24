@@ -15,6 +15,7 @@ type FifoClient struct {
 	Endpoint   string
 	Timeout    int
 	MaxRetries int
+	NetworkMap map[string]string
 	PackageMap map[string]string
 	DatasetMap map[string]string
 }
@@ -180,6 +181,68 @@ func (c *FifoClient) GetPackage(uuid string) (Package, error) {
 	}
 
 	return pkg, nil
+}
+
+func (c *FifoClient) CacheNetworkList() error {
+	response, err := c.SendRequest("GET", "/api/3/networks", nil)
+	if err != nil {
+		return err
+	}
+
+	var networks []string
+	if err := json.Unmarshal(response, &networks); err != nil {
+		return err
+	}
+
+	for _, uuid := range networks {
+		nw := Network{}
+
+		nw, err = c.GetNetwork(uuid)
+		if err != nil {
+			return err
+		}
+
+		key := nw.Name
+		c.NetworkMap[key] = uuid
+	}
+
+	return nil
+}
+
+func (c *FifoClient) FindNetwork(name string) (Network, bool, error) {
+	if len(c.NetworkMap) == 0 {
+		c.NetworkMap = make(map[string]string)
+		err := c.CacheNetworkList()
+		if err != nil {
+			return Network{}, false, err
+		}
+	}
+
+	key := name
+	uuid, found := c.NetworkMap[key]
+	if !found {
+		return Network{}, false, nil
+	}
+
+	foundNetwork, err := c.GetNetwork(uuid)
+
+	found = err == nil
+
+	return foundNetwork, found, err
+}
+
+func (c *FifoClient) GetNetwork(uuid string) (Network, error) {
+	response, err := c.SendRequest("GET", "/api/3/networks/"+uuid, nil)
+	if err != nil {
+		return Network{}, err
+	}
+
+	nw := Network{}
+	if err := json.Unmarshal(response, &nw); err != nil {
+		return Network{}, err
+	}
+
+	return nw, nil
 
 }
 
