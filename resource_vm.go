@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -108,7 +109,11 @@ func vmCreateFunc(d *schema.ResourceData, meta interface{}) error {
 		}
 
 		state := strings.ToLower(vm.State)
-		if state == "running" || state == "failed" {
+		if state == "failed" {
+			return fmt.Errorf("Failed to create VM.")
+		}
+
+		if state == "running" {
 			if len(vm.Config.Networks) > 0 && vm.Config.Networks[0].IP != "" {
 				d.Set("package", vm.Package)
 				d.Set("dataset", vm.Dataset)
